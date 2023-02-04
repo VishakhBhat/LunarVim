@@ -66,14 +66,6 @@ local defaults = {
     ["]q"] = ":cnext<CR>",
     ["[q"] = ":cprev<CR>",
     ["<C-q>"] = ":call QuickFixToggle()<CR>",
-
-    -- Toggle Terminal
-    ["<M-1>"] = '<cmd>lua require \'lvim.core.terminal\'.init_term({ nil, "<M-1>", "Horizontal Terminal", "horizontal", 0.3 })<cr>',
-    -- ["<M-2>"] = "<cmd>lua require 'lvim.core.terminal'.lazygit_toggle()<cr>",
-    -- ["<M-3>"] = "<cmd>lua require 'lvim.core.terminal'.lazygit_toggle()<cr>",
-    -- ["<M-1>"] = ":ToggleTerm direction=horizontal<CR>",
-    -- ["<M-2>"] = ":ToggleTerm direction=vertical<CR>",
-    -- ["<M-3>"] = ":ToggleTerm direction=float<CR>",
   },
 
   term_mode = {
@@ -161,9 +153,17 @@ end
 -- @param keymaps A list of key mappings for each mode
 function M.load(keymaps)
   -- Lazy load toggleterm keybindings
+
+  -- TEMP
+  lvim.builtin.terminal = {}
+  lvim.builtin.terminal.execs = {
+    { nil, "<M-1>", "Horizontal Terminal", "horizontal", 0.3 },
+    { nil, "<M-2>", "Vertical Terminal", "vertical", 0.4 },
+    { nil, "<M-3>", "Float Terminal", "float", nil },
+  }
   for i, exec in pairs(lvim.builtin.terminal.execs) do
     if exec[2] then
-      defaults.normal_mode[exec[2]] = "<cmd>lua require('lvim.core.keymappings').load_term_keymap(" .. i .. ")<cr>"
+      defaults.normal_mode[exec[2]] = "<cmd>lua require('lvim.keymappings').load_term_keymap(" .. i .. ")<cr>"
     end
   end
 
@@ -181,6 +181,7 @@ function M.load_term_keymap(index)
   local start_time = os.clock()
   local direction = exec[4] or lvim.builtin.terminal.direction
 
+  vim.pretty_print(lvim.builtin.terminal.shell)
   local opts = {
     cmd = exec[1] or lvim.builtin.terminal.shell,
     keymap = exec[2],
@@ -194,8 +195,9 @@ function M.load_term_keymap(index)
   }
   i = i + 1
 
-  local func = M.add_exec(opts)
+  local func = terminal.gen_exec(opts)
   func()
+  vim.keymap.set({ "n", "t" }, opts.keymap, exec, { desc = opts.label, noremap = true, silent = true })
   local end_time = os.clock()
   vim.pretty_print("Terminal loaded in " .. end_time - start_time .. "ms")
 end

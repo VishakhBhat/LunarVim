@@ -86,9 +86,7 @@ M.setup = function()
   end
 end
 
-local i = 1
-
-M.add_exec = function(opts)
+M.gen_exec = function(opts)
   local binary = opts.cmd:match "(%S+)"
   if vim.fn.executable(binary) ~= 1 then
     Log:debug("Skipping configuring executable " .. binary .. ". Please make sure it is installed properly.")
@@ -97,7 +95,6 @@ M.add_exec = function(opts)
   local exec = function()
     M._exec_toggle { cmd = opts.cmd, count = opts.count, direction = opts.direction, size = opts.size() }
   end
-  vim.keymap.set({ "n", "t" }, opts.keymap, exec, { desc = opts.label, noremap = true, silent = true })
 
   return exec
 end
