@@ -152,38 +152,30 @@ end
 -- Load key mappings for all provided modes
 -- @param keymaps A list of key mappings for each mode
 function M.load(keymaps)
-  -- Lazy load toggleterm keybindings
-
-  -- TEMP
-  lvim.builtin.terminal = {}
-  lvim.builtin.terminal.execs = {
-    { nil, "<M-1>", "Horizontal Terminal", "horizontal", 0.3 },
-    { nil, "<M-2>", "Vertical Terminal", "vertical", 0.4 },
-    { nil, "<M-3>", "Float Terminal", "float", nil },
-  }
-  for i, exec in pairs(lvim.builtin.terminal.execs) do
-    if exec[2] then
-      defaults.normal_mode[exec[2]] = "<cmd>lua require('lvim.keymappings').load_term_keymap(" .. i .. ")<cr>"
-    end
-  end
-
   keymaps = keymaps or {}
   for mode, mapping in pairs(keymaps) do
     M.load_mode(mode, mapping)
   end
 end
 
+function M.init_terminal_keymaps()
+  local execs = lvim.builtin.terminal.execs
+  for i, exec in pairs(execs) do
+    if exec[2] then
+      M.set_keymaps("n", exec[2], "<cmd>lua require('lvim.keymappings').load_toggleterm_keymap(" .. i .. ")<cr>")
+    end
+  end
+end
+
 local i = 1
 
-function M.load_term_keymap(index)
+function M.load_toggleterm_keymap(index)
   local terminal = require "lvim.core.terminal"
   local exec = lvim.builtin.terminal.execs[index]
-  -- local start_time = os.clock()
   local direction = exec[4] or lvim.builtin.terminal.direction
 
   local opts = {
-    cmd = exec[1] or "zsh",
-    -- cmd = exec[1] or lvim.builtin.terminal.shell,
+    cmd = exec[1] or lvim.builtin.terminal.shell,
     keymap = exec[2],
     label = exec[3],
     -- NOTE: unable to consistently bind id/count <= 9, see #2146
@@ -197,9 +189,8 @@ function M.load_term_keymap(index)
 
   local func = terminal.gen_exec(opts)
   func()
-  vim.keymap.set({ "n", "t" }, opts.keymap, func, { desc = opts.label, noremap = true, silent = true })
-  -- local end_time = os.clock()
-  -- vim.pretty_print("Terminal loaded in " .. end_time - start_time .. "ms")
+  M.set_keymaps("n", opts.keymap, func, { desc = opts.label, noremap = true, silent = true })
+  M.set_keymaps("t", opts.keymap, func, { desc = opts.label, noremap = true, silent = true })
 end
 
 -- Load the default keymappings
