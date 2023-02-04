@@ -181,9 +181,10 @@ function M.load_term_keymap(index)
   local start_time = os.clock()
   local direction = exec[4] or lvim.builtin.terminal.direction
 
-  vim.pretty_print(lvim.builtin.terminal.shell)
+  vim.pretty_print(exec)
   local opts = {
-    cmd = exec[1] or lvim.builtin.terminal.shell,
+    cmd = exec[1] or "zsh",
+    -- cmd = exec[1] or lvim.builtin.terminal.shell,
     keymap = exec[2],
     label = exec[3],
     -- NOTE: unable to consistently bind id/count <= 9, see #2146
@@ -197,7 +198,7 @@ function M.load_term_keymap(index)
 
   local func = terminal.gen_exec(opts)
   func()
-  vim.keymap.set({ "n", "t" }, opts.keymap, exec, { desc = opts.label, noremap = true, silent = true })
+  vim.keymap.set({ "n", "t" }, opts.keymap, func, { desc = opts.label, noremap = true, silent = true })
   local end_time = os.clock()
   vim.pretty_print("Terminal loaded in " .. end_time - start_time .. "ms")
 end
