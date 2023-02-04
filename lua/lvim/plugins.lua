@@ -272,7 +272,7 @@ local core_plugins = {
     config = function()
       require("lvim.core.terminal").setup()
     end,
-    keys = lvim.builtin.terminal.keys,
+    keys = lvim.builtin.terminal.open_mapping,
     lazy = true,
     enabled = lvim.builtin.terminal.active,
   },
