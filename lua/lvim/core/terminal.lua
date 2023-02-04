@@ -81,28 +81,12 @@ M.setup = function()
   local terminal = require "toggleterm"
   terminal.setup(lvim.builtin.terminal)
 
-  for i, exec in pairs(lvim.builtin.terminal.execs) do
-    local direction = exec[4] or lvim.builtin.terminal.direction
-
-    local opts = {
-      cmd = exec[1] or lvim.builtin.terminal.shell,
-      keymap = exec[2],
-      label = exec[3],
-      -- NOTE: unable to consistently bind id/count <= 9, see #2146
-      count = i + 100,
-      direction = direction,
-      size = function()
-        return get_dynamic_terminal_size(direction, exec[5])
-      end,
-    }
-
-    M.add_exec(opts)
-  end
-
   if lvim.builtin.terminal.on_config_done then
     lvim.builtin.terminal.on_config_done(terminal)
   end
 end
+
+local i = 1
 
 M.add_exec = function(opts)
   local binary = opts.cmd:match "(%S+)"
@@ -110,10 +94,12 @@ M.add_exec = function(opts)
     Log:debug("Skipping configuring executable " .. binary .. ". Please make sure it is installed properly.")
     return
   end
-
-  vim.keymap.set({ "n", "t" }, opts.keymap, function()
+  local exec = function()
     M._exec_toggle { cmd = opts.cmd, count = opts.count, direction = opts.direction, size = opts.size() }
-  end, { desc = opts.label, noremap = true, silent = true })
+  end
+  vim.keymap.set({ "n", "t" }, opts.keymap, exec, { desc = opts.label, noremap = true, silent = true })
+
+  return exec
 end
 
 M._exec_toggle = function(opts)

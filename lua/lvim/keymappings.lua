@@ -66,6 +66,14 @@ local defaults = {
     ["]q"] = ":cnext<CR>",
     ["[q"] = ":cprev<CR>",
     ["<C-q>"] = ":call QuickFixToggle()<CR>",
+
+    -- Toggle Terminal
+    ["<M-1>"] = '<cmd>lua require \'lvim.core.terminal\'.init_term({ nil, "<M-1>", "Horizontal Terminal", "horizontal", 0.3 })<cr>',
+    -- ["<M-2>"] = "<cmd>lua require 'lvim.core.terminal'.lazygit_toggle()<cr>",
+    -- ["<M-3>"] = "<cmd>lua require 'lvim.core.terminal'.lazygit_toggle()<cr>",
+    -- ["<M-1>"] = ":ToggleTerm direction=horizontal<CR>",
+    -- ["<M-2>"] = ":ToggleTerm direction=vertical<CR>",
+    -- ["<M-3>"] = ":ToggleTerm direction=float<CR>",
   },
 
   term_mode = {
@@ -152,10 +160,44 @@ end
 -- Load key mappings for all provided modes
 -- @param keymaps A list of key mappings for each mode
 function M.load(keymaps)
+  -- Lazy load toggleterm keybindings
+  for i, exec in pairs(lvim.builtin.terminal.execs) do
+    if exec[2] then
+      defaults.normal_mode[exec[2]] = "<cmd>lua require('lvim.core.keymappings').load_term_keymap(" .. i .. ")<cr>"
+    end
+  end
+
   keymaps = keymaps or {}
   for mode, mapping in pairs(keymaps) do
     M.load_mode(mode, mapping)
   end
+end
+
+local i = 1
+
+function M.load_term_keymap(index)
+  local terminal = require "lvim.core.terminal"
+  local exec = lvim.builtin.terminal.execs[index]
+  local start_time = os.clock()
+  local direction = exec[4] or lvim.builtin.terminal.direction
+
+  local opts = {
+    cmd = exec[1] or lvim.builtin.terminal.shell,
+    keymap = exec[2],
+    label = exec[3],
+    -- NOTE: unable to consistently bind id/count <= 9, see #2146
+    count = i + 100,
+    direction = direction,
+    size = function()
+      return terminal.get_dynamic_terminal_size(direction, exec[5])
+    end,
+  }
+  i = i + 1
+
+  local func = M.add_exec(opts)
+  func()
+  local end_time = os.clock()
+  vim.pretty_print("Terminal loaded in " .. end_time - start_time .. "ms")
 end
 
 -- Load the default keymappings

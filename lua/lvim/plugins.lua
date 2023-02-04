@@ -265,11 +265,13 @@ local core_plugins = {
   -- Terminal
   {
     "akinsho/toggleterm.nvim",
-    event = "VeryLazy",
+    -- event = "VeryLazy",
+    -- cmd = "ToggleTerm",
     branch = "main",
     config = function()
       require("lvim.core.terminal").setup()
     end,
+    lazy = true,
     enabled = lvim.builtin.terminal.active,
   },
 
