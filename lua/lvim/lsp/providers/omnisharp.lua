@@ -30,6 +30,8 @@ local opts = {
     -- true
     analyze_open_documents_only = true,
 
+    filetypes = { 'cs' },
+
     -- Provide the function to calculate the root directory to LSP
     root_dir = function(fname)
         -- Todo: Remove the hard code and use current neovim directory
